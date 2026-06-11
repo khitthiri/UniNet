@@ -54,10 +54,17 @@ export default function InstructorAssignmentDetail() {
         {(assignment.resources || []).length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {assignment.resources.map((r, i) => (
-              <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-[12px] font-semibold hover:bg-primary/15 transition-colors">
-                <IcLink width={13} height={13} /> {r.label || r.url}
-              </a>
+              r.kind === "file" ? (
+                <button key={i} type="button" onClick={() => openAttachment(r)}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-[12px] font-semibold hover:bg-primary/15 transition-colors">
+                  <IcFile width={13} height={13} /> {r.label || r.name} <IcDownload width={12} height={12} className="opacity-70" />
+                </button>
+              ) : (
+                <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-[12px] font-semibold hover:bg-primary/15 transition-colors">
+                  <IcLink width={13} height={13} /> {r.label || r.url}
+                </a>
+              )
             ))}
           </div>
         )}

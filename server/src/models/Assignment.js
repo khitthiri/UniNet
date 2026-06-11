@@ -11,8 +11,13 @@ const assignmentSchema = new mongoose.Schema(
     maxPoints: { type: Number, required: true, min: 1, default: 100 },
     // Clickable resource links the instructor attaches (briefs, readings, exam portals)
     resources: [{
+      kind: { type: String, enum: ["link", "file"], default: "link" },
       label: { type: String, trim: true, default: "" },
-      url: { type: String, trim: true, required: true },
+      url: { type: String, trim: true, default: "" },               // for kind=link
+      fileId: { type: mongoose.Schema.Types.ObjectId, ref: "File" }, // for kind=file
+      name: { type: String, trim: true, default: "" },
+      mime: { type: String, trim: true, default: "" },
+      size: { type: Number, default: 0 },
     }],
     // The instructor who assigned it
     instructor: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

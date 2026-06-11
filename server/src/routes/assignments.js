@@ -10,13 +10,19 @@ router.use(requireAuth);
 function cleanResources(resources) {
   if (!Array.isArray(resources)) return [];
   return resources
-    .filter((r) => r && typeof r.url === "string" && r.url.trim())
+    .filter((r) => r && (r.kind === "file" || r.kind === "link" || typeof r.url === "string"))
     .slice(0, 20)
     .map((r) => {
-      let url = r.url.trim();
+      if (r.kind === "file") {
+        if (!r.fileId) return null;
+        return { kind: "file", label: (r.label || "").trim(), fileId: r.fileId, name: (r.name || "file").trim(), mime: r.mime || "", size: r.size || 0 };
+      }
+      let url = String(r.url || "").trim();
+      if (!url) return null;
       if (!/^https?:\/\//i.test(url)) url = "https://" + url; // tolerate "example.com"
-      return { label: (r.label || "").trim(), url };
-    });
+      return { kind: "link", label: (r.label || "").trim(), url };
+    })
+    .filter(Boolean);
 }
 
 

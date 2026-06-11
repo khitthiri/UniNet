@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../api/client.js";
 import { PageHeader } from "../../components/Page.jsx";
-import { IcPlus, IcArrow, IcLink, IcTrash } from "../../components/Icons.jsx";
+import { uploadFile, openAttachment, prettySize } from "../../api/files.js";
+import { IcPlus, IcArrow, IcLink, IcFile, IcDownload, IcTrash } from "../../components/Icons.jsx";
 import { modalBackdrop, modalCard } from "../../ui/motion.js";
 
 const YEARS = ["All", "Freshman", "Sophomore", "Junior", "Senior", "Graduate"];
@@ -11,6 +12,9 @@ const EMPTY = { title: "", description: "", type: "assignment", course: "", dueD
 
 export default function InstructorAssignments() {
   const [items, setItems] = useState([]);
+  const fileInput = useRef(null);
+  const [linkDraft, setLinkDraft] = useState({ label: "", url: "" });
+  const [uploading, setUploading] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
@@ -20,15 +24,31 @@ export default function InstructorAssignments() {
   const load = () => api.get("/api/assignments").then((r) => setItems(r.data)).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const addLink = () => setForm({ ...form, resources: [...form.resources, { label: "", url: "" }] });
-  const setLink = (i, k) => (e) => setForm({ ...form, resources: form.resources.map((r, idx) => idx === i ? { ...r, [k]: e.target.value } : r) });
-  const removeLink = (i) => setForm({ ...form, resources: form.resources.filter((_, idx) => idx !== i) });
+  const addResourceLink = () => {
+    if (!linkDraft.url.trim()) return;
+    setForm((f) => ({ ...f, resources: [...f.resources, { kind: "link", label: linkDraft.label.trim(), url: linkDraft.url.trim() }] }));
+    setLinkDraft({ label: "", url: "" });
+  };
+  const onPickFiles = async (e) => {
+    const files = [...e.target.files];
+    e.target.value = "";
+    if (!files.length) return;
+    setUploading(true); setError("");
+    try {
+      for (const f of files) {
+        const ref = await uploadFile(f);
+        setForm((prev) => ({ ...prev, resources: [...prev.resources, ref] }));
+      }
+    } catch (err) { setError(err.response?.data?.message || err.message || "Upload failed."); }
+    finally { setUploading(false); }
+  };
+  const removeResource = (i) => setForm((f) => ({ ...f, resources: f.resources.filter((_, idx) => idx !== i) }));
 
   const create = async () => {
     setError("");
     if (!form.title || !form.course || !form.dueDate) return setError("Title, course, and due date are required.");
     setBusy(true);
-    try { await api.post("/api/assignments", { ...form, maxPoints: Number(form.maxPoints), resources: form.resources.filter((r) => r.url.trim()) }); setForm(EMPTY); setOpen(false); await load(); }
+    try { await api.post("/api/assignments", { ...form, maxPoints: Number(form.maxPoints) }); setForm(EMPTY); setOpen(false); await load(); }
     catch (err) { setError(err.response?.data?.message || "Could not create the assignment."); }
     finally { setBusy(false); }
   };
@@ -97,20 +117,44 @@ export default function InstructorAssignments() {
                   placeholder="Instructions — what students need to do, and how it will be graded." />
 
                 <div className="sm:col-span-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[12px] font-semibold opacity-50 ml-1">Resource links <span className="font-normal">(optional)</span></p>
-                    <button type="button" onClick={addLink} className="text-[12px] font-semibold text-primary inline-flex items-center gap-1"><IcPlus width={14} height={14} /> Add link</button>
+                  <p className="text-[12px] font-semibold opacity-50 ml-1 mb-1.5">Resources <span className="font-normal">(optional)</span></p>
+                  {form.resources.length === 0 && <p className="text-[12px] opacity-40 ml-1 mb-2">Attach files (briefs, exam papers, slides) or links students can open.</p>}
+
+                  {form.resources.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {form.resources.map((r, i) => (
+                        <div key={i} className="flex items-center gap-3 rounded-2xl bg-base-200 px-3.5 py-2.5">
+                          {r.kind === "file" ? <IcFile width={18} height={18} className="text-primary shrink-0" /> : <IcLink width={18} height={18} className="text-primary shrink-0" />}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[14px] font-medium truncate">{r.kind === "file" ? r.name : (r.label || r.url)}</p>
+                            <p className="text-[12px] opacity-45 truncate">{r.kind === "file" ? prettySize(r.size) : r.url}</p>
+                          </div>
+                          {(r.fileId || r.kind === "link") && (
+                            <button type="button" onClick={() => openAttachment(r)} className="btn btn-ghost btn-xs btn-circle" title={r.kind === "file" ? "Download" : "Open"}>
+                              {r.kind === "file" ? <IcDownload width={16} height={16} /> : <IcArrow width={16} height={16} />}
+                            </button>
+                          )}
+                          <button type="button" onClick={() => removeResource(i)} className="btn btn-ghost btn-xs btn-circle text-[#d70015]" title="Remove"><IcTrash width={15} height={15} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input ref={fileInput} type="file" multiple className="hidden" onChange={onPickFiles} />
+                    <button type="button" className="btn btn-sm btn-outline border-base-content/15" onClick={() => fileInput.current?.click()} disabled={uploading}>
+                      {uploading ? <span className="loading loading-spinner loading-xs" /> : <IcFile width={16} height={16} />} Add file
+                    </button>
+                    <span className="text-[12px] opacity-40">Up to 4MB each</span>
                   </div>
-                  {form.resources.length === 0 && <p className="text-[12px] opacity-40 ml-1">Attach briefs, readings, or an exam portal students can click through to.</p>}
-                  <div className="space-y-2">
-                    {form.resources.map((r, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <IcLink width={16} height={16} className="opacity-40 shrink-0" />
-                        <input className="input flex-1 min-w-0" placeholder="Label (e.g. Reading 1)" value={r.label} onChange={setLink(i, "label")} />
-                        <input className="input flex-[1.4] min-w-0" placeholder="https://…" value={r.url} onChange={setLink(i, "url")} />
-                        <button type="button" onClick={() => removeLink(i)} className="btn btn-ghost btn-sm btn-circle text-[#d70015]"><IcTrash width={16} height={16} /></button>
-                      </div>
-                    ))}
+
+                  <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                    <input className="input flex-1" placeholder="Label (optional)" value={linkDraft.label} onChange={(e) => setLinkDraft({ ...linkDraft, label: e.target.value })} />
+                    <input className="input flex-[1.4]" placeholder="https://…" value={linkDraft.url}
+                      onChange={(e) => setLinkDraft({ ...linkDraft, url: e.target.value })} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addResourceLink())} />
+                    <button type="button" className="btn btn-sm btn-outline border-base-content/15" onClick={addResourceLink} disabled={!linkDraft.url.trim()}>
+                      <IcPlus width={16} height={16} /> Add link
+                    </button>
                   </div>
                 </div>
               </div>
