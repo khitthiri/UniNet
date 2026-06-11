@@ -1,43 +1,77 @@
-# UniNet — Student/Instructor Performance Tracking System
+# UniNet
 
-A full intranet-style web app for tracking assignments, exams, submissions, and grades.
-Students see their work and grades; instructors assign tasks, grade, and leave feedback.
+UniNet is a performance tracking system for students and instructors. Instructors post assignments and exams, set due dates, and grade what students hand in. Students see their work, submit answers (as text, files, or links), and keep track of their grades. I built this as a full-stack project for school, and the goal was for it to feel like a small intranet you'd actually log into for a class rather than just a demo.
 
-## Stack
-- **Frontend:** React + Vite + Tailwind + daisyUI + Framer Motion + Recharts
-- **Backend:** Node.js + Express + Mongoose (MongoDB) + JWT auth
-- Deploys on **Vercel** (frontend) + **Render** (backend) + **MongoDB Atlas**
+It works on both desktop and mobile.
 
-## What it covers (per the brief)
-- Student information (academic year / level, student ID) — shown in sidebar + Profile
-- A list of assigned tasks/assignments given by the instructor
-- Due dates for each assignment
-- Submission status: not submitted / submitted / late (auto-detected) / overdue
-- Grading by the instructor (per student, out of max points)
-- Notes from **both** the student and the instructor
+## What you can do
 
-## App structure (FinSight-style)
-- **Onboarding:** Welcome screen → choose Student or Instructor → Login/Register
-- **Persistent dark sidebar** with role-based nav, profile card, dark/light toggle, sign out
-- **Student:** Overview (stats + charts + deadlines + feedback) · Assignments · Grades · Profile
-- **Instructor:** Overview (stats + charts + needs-grading) · Assignments · Gradebook · Profile
+**As a student**
+- See every assignment and exam assigned to your year, with the due date and where you stand (not submitted, submitted, late, or overdue)
+- Turn in a written answer, attach files, or paste links to your work
+- Track your grades, your overall average, and a breakdown by course
+- Send feedback to your instructors about how they teach
 
-## Run locally
-1. `cd server && cp .env.example .env` — set `MONGO_URI` and `JWT_SECRET`
-2. `cd server && npm install && npm run dev`  (port 5000)
-3. `cd client && npm install && npm run dev`  (port 5173, proxies /api → 5000)
+**As an instructor**
+- Create assignments and exams, set the due date, points, and which year they go to
+- Attach resource links students can click through to (readings, briefs, an exam portal, etc.)
+- Grade submissions, leave notes, and open the files students attached
+- Use the gradebook to see class averages per course and who still needs grading
+- Read the feedback students leave about your teaching
 
-## Deploy
-- **Backend (Render):** root `server/`, build `npm install`, start `npm start`; set env `MONGO_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`
-- **Frontend (Vercel):** root `client/`; set env `VITE_API_URL` to your Render URL (vercel.json handles SPA routing)
-- **DB:** MongoDB Atlas free cluster; allow your IPs in Network Access
+Everyone gets a unique ID when they sign up, which doubles as the student/instructor ID, and you can log in with either your email or that ID.
 
-## Update — added features
-- **Student/Instructor IDs:** every account gets a system-generated unique ID (e.g. `STU-7F3K9Q`, `INS-2M8XPL`) — this *is* their student/instructor ID, shown in the sidebar and on Profile. No separate manual ID field.
-- **Login by email *or* ID:** the sign-in field accepts either, plus password.
-- **Resource links on assignments:** instructors attach clickable links (briefs, readings, exam portals); students and instructors can open them.
-- **File + link submissions:** students attach files (stored in MongoDB as base64, up to 4MB each — no external storage needed) and/or links, alongside the optional written answer. Grading shows and downloads them.
-- **Two-way feedback:** students send feedback (with optional 1–5★ rating) to their instructors about teaching; instructors see all feedback received with an average rating and per-course breakdown. (Instructors already give per-submission feedback when grading.)
-- **Instructor grade-rate analysis:** the Gradebook now shows class average, average grade per course (chart + breakdown), and per-assignment grading status.
+## Tech stack
 
-> Note: file attachments are stored inside MongoDB (base64) to keep the app on the forever-free stack with zero extra config. For very large files at scale you'd swap in object storage (e.g. Cloudinary/S3), but this is ideal for a capstone demo.
+Frontend is React with Vite, Tailwind and daisyUI for styling, Framer Motion for the animations, and Recharts for the charts. Backend is Node and Express with MongoDB (Mongoose), and auth is handled with JWT.
+
+For deployment I went with the same setup I'd used before on FinSight: frontend on Vercel, backend on Render, database on MongoDB Atlas.
+
+## Running it locally
+
+You'll need Node installed and a MongoDB connection (either a local mongod or a free Atlas cluster).
+
+Backend:
+```bash
+cd server
+cp .env.example .env     # then fill in MONGO_URI and JWT_SECRET
+npm install
+npm run dev              # http://localhost:5000
+```
+
+Frontend, in a second terminal:
+```bash
+cd client
+npm install
+npm run dev              # http://localhost:5173
+```
+
+The Vite dev server proxies `/api` to the backend, so there's nothing else to wire up for local dev.
+
+## Environment variables
+
+`server/.env`:
+```
+PORT=5000
+MONGO_URI=your-mongodb-connection-string
+JWT_SECRET=any-long-random-string
+CLIENT_ORIGIN=http://localhost:5173
+```
+
+In production, set `VITE_API_URL` on the frontend to your deployed backend URL.
+
+## Deploying
+
+- **Database:** make a free MongoDB Atlas cluster, copy the connection string, and allow your IPs under Network Access.
+- **Backend (Render):** root directory `server`, build command `npm install`, start command `npm start`. Add `MONGO_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN` as env vars.
+- **Frontend (Vercel):** root directory `client`. Set `VITE_API_URL` to the Render URL. The included `vercel.json` handles the SPA routing.
+
+## A note on file uploads
+
+Files students submit are stored in MongoDB as base64, capped at about 4MB each. I did it this way so the whole app runs on free tiers without needing a separate storage service. If it ever had to deal with a lot of big files I'd move uploads over to something like Cloudinary or S3, but for the size of this project keeping it self-contained made more sense.
+
+## Stuff I might add later
+
+- Editing assignments after posting (right now you can create and delete, not edit)
+- Reminders/notifications when something is due soon or just got graded
+- Filtering the gradebook by course
