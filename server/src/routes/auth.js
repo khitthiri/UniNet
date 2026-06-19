@@ -22,7 +22,6 @@ function publicUser(u) {
   };
 }
 
-// POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role, academicYear, department } = req.body;
@@ -43,7 +42,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// POST /api/auth/login — accepts an email OR a unique ID, plus password.
 router.post("/login", async (req, res) => {
   try {
     const { identifier, email, password } = req.body;
@@ -62,7 +60,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// GET /api/auth/me — restore session on refresh
 router.get("/me", requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });
