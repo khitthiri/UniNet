@@ -8,8 +8,6 @@ import { visibleYearValues } from "../utils/normalize.js";
 const router = Router();
 router.use(requireAuth);
 
-// GET /api/feedback/instructors — instructors (and their courses) a student can give feedback to.
-// Derived from the assignments visible to the student.
 router.get("/instructors", requireRole("student"), async (req, res) => {
   try {
     const assignments = await Assignment.find({ assignedTo: { $in: visibleYearValues(req.user.academicYear) } })
@@ -29,7 +27,6 @@ router.get("/instructors", requireRole("student"), async (req, res) => {
   }
 });
 
-// POST /api/feedback — student sends feedback to an instructor
 router.post("/", requireRole("student"), async (req, res) => {
   try {
     const { to, course = "", rating = null, message } = req.body;
@@ -43,7 +40,6 @@ router.post("/", requireRole("student"), async (req, res) => {
   }
 });
 
-// GET /api/feedback/mine — feedback the student has given
 router.get("/mine", requireRole("student"), async (req, res) => {
   try {
     const list = await Feedback.find({ from: req.user._id }).populate("to", "name uid").sort({ createdAt: -1 }).lean();
@@ -53,7 +49,6 @@ router.get("/mine", requireRole("student"), async (req, res) => {
   }
 });
 
-// GET /api/feedback — feedback an instructor has received (+ summary)
 router.get("/", requireRole("instructor"), async (req, res) => {
   try {
     const list = await Feedback.find({ to: req.user._id }).populate("from", "name uid academicYear").sort({ createdAt: -1 }).lean();
