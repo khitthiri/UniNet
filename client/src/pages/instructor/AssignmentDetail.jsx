@@ -75,7 +75,6 @@ export default function InstructorAssignmentDetail() {
         </div>
       </div>
 
-      {/* Mobile cards */}
       <div className="mt-4 space-y-3 sm:hidden">
         {roster.map((row) => (
           <motion.button key={row.student._id} whileTap={{ scale: 0.985 }} onClick={() => openGrading(row)} className="surface w-full text-left flex items-center gap-3 px-5 py-4">
@@ -89,7 +88,6 @@ export default function InstructorAssignmentDetail() {
         ))}
       </div>
 
-      {/* Desktop table */}
       <div className="hidden sm:block surface mt-4 overflow-hidden">
         <table className="table">
           <thead><tr className="border-base-content/5 text-[12px] uppercase tracking-wide opacity-50"><th>Student</th><th>Year</th><th>Status</th><th>Submitted</th><th>Grade</th><th></th></tr></thead>
@@ -108,7 +106,6 @@ export default function InstructorAssignmentDetail() {
         </table>
       </div>
 
-      {/* Grading sheet */}
       <AnimatePresence>
         {active && (
           <motion.div variants={modalBackdrop} initial="hidden" animate="show" exit="exit" className="fixed inset-0 z-50 grid place-items-end sm:place-items-center bg-black/30"
