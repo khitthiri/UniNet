@@ -26,9 +26,6 @@ function cleanAttachments(attachments) {
     .filter(Boolean);
 }
 
-
-// GET /api/submissions/assignment/:assignmentId — instructor: full roster for one assignment
-// Includes students who haven't submitted yet, so nothing is missed.
 router.get("/assignment/:assignmentId", requireRole("instructor"), async (req, res) => {
   try {
     const assignment = await Assignment.findOne({ _id: req.params.assignmentId, instructor: req.user._id }).lean();
@@ -57,8 +54,6 @@ router.get("/assignment/:assignmentId", requireRole("instructor"), async (req, r
   }
 });
 
-// POST /api/submissions/:assignmentId/submit — student submits work
-// Status is computed on the server: "late" if past the due date, otherwise "submitted".
 router.post("/:assignmentId/submit", requireRole("student"), async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.assignmentId);
@@ -80,7 +75,6 @@ router.post("/:assignmentId/submit", requireRole("student"), async (req, res) =>
   }
 });
 
-// PUT /api/submissions/:assignmentId/student-note — student updates their note any time
 router.put("/:assignmentId/student-note", requireRole("student"), async (req, res) => {
   try {
     const submission = await Submission.findOneAndUpdate(
@@ -94,7 +88,6 @@ router.put("/:assignmentId/student-note", requireRole("student"), async (req, re
   }
 });
 
-// PUT /api/submissions/:assignmentId/grade — instructor grades + leaves a note
 router.put("/:assignmentId/grade", requireRole("instructor"), async (req, res) => {
   try {
     const assignment = await Assignment.findOne({ _id: req.params.assignmentId, instructor: req.user._id });
@@ -122,7 +115,6 @@ router.put("/:assignmentId/grade", requireRole("instructor"), async (req, res) =
   }
 });
 
-// GET /api/submissions/my-grades — student: graded work overview for performance tracking
 router.get("/my-grades", requireRole("student"), async (req, res) => {
   try {
     const subs = await Submission.find({ student: req.user._id, grade: { $ne: null } })
@@ -135,7 +127,6 @@ router.get("/my-grades", requireRole("student"), async (req, res) => {
   }
 });
 
-// GET /api/submissions/instructor/analytics — grade-rate analysis across the instructor's classes
 router.get("/instructor/analytics", requireRole("instructor"), async (req, res) => {
   try {
     const assignments = await Assignment.find({ instructor: req.user._id })
@@ -153,7 +144,6 @@ router.get("/instructor/analytics", requireRole("instructor"), async (req, res) 
     const all = subs.map(pct).filter((v) => v != null);
     const mean = (arr) => (arr.length ? Math.round(arr.reduce((x, y) => x + y, 0) / arr.length) : null);
 
-    // per course
     const courseMap = {};
     for (const a of assignments) (courseMap[a.course] ||= { course: a.course, assignmentIds: new Set(), pcts: [] }).assignmentIds.add(String(a._id));
     for (const s of subs) {
@@ -168,7 +158,6 @@ router.get("/instructor/analytics", requireRole("instructor"), async (req, res) 
       assignmentCount: c.assignmentIds.size,
     })).sort((x, y) => (y.avgPercent ?? -1) - (x.avgPercent ?? -1));
 
-    // per assignment
     const asgMap = {};
     for (const s of subs) {
       const p = pct(s);
