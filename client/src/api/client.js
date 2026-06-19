@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// In production set VITE_API_URL to your deployed API (e.g. https://uninet-api.onrender.com).
-// In development the Vite proxy forwards /api to localhost:5000.
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
 });
