@@ -7,7 +7,6 @@ const readAsBase64 = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-// Upload a File object -> returns an attachment ref { kind:"file", fileId, name, mime, size }
 export async function uploadFile(file) {
   if (file.size > 4 * 1024 * 1024) throw new Error(`"${file.name}" is larger than 4MB.`);
   const data = await readAsBase64(file);
@@ -15,7 +14,6 @@ export async function uploadFile(file) {
   return { kind: "file", fileId: res.data.id, name: res.data.name, mime: res.data.mime, size: res.data.size };
 }
 
-// Open/download an attachment (link opens in a tab; file downloads via authenticated fetch)
 export async function openAttachment(att) {
   if (att.kind === "link") { window.open(att.url, "_blank", "noopener"); return; }
   const res = await api.get(`/api/files/${att.fileId}`);
