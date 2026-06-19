@@ -1,4 +1,3 @@
-// Shared Framer Motion presets — one motion language across the app.
 export const spring = { type: "spring", stiffness: 380, damping: 30 };
 export const springSoft = { type: "spring", stiffness: 260, damping: 26 };
 
