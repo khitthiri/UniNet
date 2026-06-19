@@ -5,9 +5,8 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 router.use(requireAuth);
 
-const MAX_BASE64 = 6_000_000; // ~4.3MB raw file
+const MAX_BASE64 = 6_000_000; 
 
-// POST /api/files — store a base64 file, return a reference
 router.post("/", async (req, res) => {
   try {
     const { name, mime, data, size } = req.body;
@@ -22,7 +21,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET /api/files/:id — return the file so the client can download it (auth via header)
 router.get("/:id", async (req, res) => {
   try {
     const file = await File.findById(req.params.id).lean();
