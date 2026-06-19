@@ -6,7 +6,6 @@ const tooltipStyle = {
 };
 
 export function GradeBarChart({ data }) {
-  // data: [{ name, percent }]
   if (!data.length) return <Empty text="No graded work yet" />;
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -24,7 +23,6 @@ export function GradeBarChart({ data }) {
 }
 
 export function StatusDonut({ data }) {
-  // data: [{ name, value, color }]
   const total = data.reduce((s, d) => s + d.value, 0);
   if (!total) return <Empty text="Nothing to show yet" />;
   return (
