@@ -88,7 +88,6 @@ export default function InstructorAssignments() {
         </AnimatePresence>
       </div>
 
-      {/* Create modal */}
       <AnimatePresence>
         {open && (
           <motion.div variants={modalBackdrop} initial="hidden" animate="show" exit="exit"
