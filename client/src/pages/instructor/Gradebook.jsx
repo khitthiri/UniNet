@@ -31,7 +31,6 @@ export default function InstructorGradebook() {
     <div className="px-4 sm:px-8 py-7 max-w-5xl mx-auto">
       <PageHeader title="Gradebook" subtitle="Grade-rate analysis and submission status across your classes" />
 
-      {/* Grade-rate analysis */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <StatCard label="Class average" value={analytics?.overall.avgPercent != null ? `${analytics.overall.avgPercent}%` : "—"} tone="text-primary" Icon={IcChart} delay={0} />
         <StatCard label="Courses" value={analytics?.overall.courseCount ?? 0} delay={0.05} />
@@ -74,7 +73,6 @@ export default function InstructorGradebook() {
         </motion.div>
       </div>
 
-      {/* Submission/grading status */}
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-4">
         <Panel title="Submission status">
           {rows.length === 0 ? <p className="text-[13px] opacity-40 py-10 text-center">No assignments yet.</p> : (
