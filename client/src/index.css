@@ -19,7 +19,6 @@ h1, h2, h3 { letter-spacing: -0.022em; }
   }
   .btn { @apply normal-case font-semibold; }
 
-  /* App chrome: sidebar always reads as a dark, premium surface */
   .sidebar-shell {
     background: linear-gradient(180deg, #18181b 0%, #0f0f12 100%);
     color: #e7e7ea;
