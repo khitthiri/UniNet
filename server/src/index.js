@@ -20,7 +20,6 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// 404 + error fallthrough
 app.use((req, res) => res.status(404).json({ message: "Route not found." }));
 
 const PORT = process.env.PORT || 5000;
