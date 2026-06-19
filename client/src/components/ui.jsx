@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
 
-// ---------- motion presets ----------
 export const spring = { type: "spring", stiffness: 380, damping: 30 };
 
 export const pageVariants = {
@@ -23,7 +22,6 @@ export function Page({ children, className = "" }) {
   );
 }
 
-// ---------- primitives ----------
 export function Card({ children, className = "", as = "div", ...props }) {
   const Tag = motion[as] || motion.div;
   return (
@@ -130,7 +128,6 @@ export function Empty({ title, body }) {
   );
 }
 
-// Segmented control, iOS-style, with a sliding pill
 export function Segmented({ options, value, onChange }) {
   return (
     <div className="inline-flex bg-black/5 rounded-full p-1 gap-0.5">
