@@ -25,10 +25,6 @@ function cleanResources(resources) {
     .filter(Boolean);
 }
 
-
-// GET /api/assignments
-// Instructor: their own assignments with submission counts.
-// Student: assignments for their academic year (or "All"), merged with their submission.
 router.get("/", async (req, res) => {
   try {
     if (req.user.role === "instructor") {
@@ -47,7 +43,6 @@ router.get("/", async (req, res) => {
       })));
     }
 
-    // Student
     const assignments = await Assignment.find({ assignedTo: { $in: visibleYearValues(req.user.academicYear) } })
       .populate("instructor", "name")
       .sort({ dueDate: 1 })
@@ -64,7 +59,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST /api/assignments — instructor creates a task
 router.post("/", requireRole("instructor"), async (req, res) => {
   try {
     const { title, description, type, course, dueDate, maxPoints, assignedTo, resources } = req.body;
@@ -83,7 +77,6 @@ router.post("/", requireRole("instructor"), async (req, res) => {
   }
 });
 
-// GET /api/assignments/:id — detail (+ student's own submission if student)
 router.get("/:id", async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id).populate("instructor", "name").lean();
@@ -98,7 +91,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PUT /api/assignments/:id — instructor edits their assignment
 router.put("/:id", requireRole("instructor"), async (req, res) => {
   try {
     const assignment = await Assignment.findOneAndUpdate(
@@ -113,7 +105,6 @@ router.put("/:id", requireRole("instructor"), async (req, res) => {
   }
 });
 
-// DELETE /api/assignments/:id — instructor deletes their assignment (and its submissions)
 router.delete("/:id", requireRole("instructor"), async (req, res) => {
   try {
     const assignment = await Assignment.findOneAndDelete({ _id: req.params.id, instructor: req.user._id });
